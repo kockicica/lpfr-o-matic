@@ -16,3 +16,5 @@
 # vendor/
 
 .idea/
+.lpfr-o-matic.yaml
+*.lnk
