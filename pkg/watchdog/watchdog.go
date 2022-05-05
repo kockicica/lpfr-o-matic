@@ -33,17 +33,6 @@ func (w *Watchdog) Start() error {
 		if err := w.sendPin(lpfrStatus); err != nil {
 			log.Fatalln("Error sending pin:", err)
 		}
-		if !w.hasMiddlewareStarted && w.middlewareApp != "" {
-			log.Println("Trying to start middleware app:", w.middlewareApp)
-			// start middleware app
-			w.hasMiddlewareStarted = true
-			mwcmd := exec.Command("cmd.exe", "/c", "start", w.middlewareApp, "/min")
-			err := mwcmd.Start()
-			if err != nil {
-				log.Println("Error starting middleware app:", err)
-			}
-
-		}
 
 		for true {
 			select {
@@ -64,9 +53,18 @@ func (w *Watchdog) Start() error {
 				if err := w.sendPin(lpfrStatus); err != nil {
 					log.Fatalln("Error sending pin:", err)
 				}
+				if lpfrStatus == lpfr.Ready && !w.hasMiddlewareStarted && w.middlewareApp != "" {
+					log.Println("Trying to start middleware app:", w.middlewareApp)
+					// start middleware app
+					w.hasMiddlewareStarted = true
+					mwcmd := exec.Command("cmd.exe", "/c", "start", w.middlewareApp, "/min")
+					err := mwcmd.Start()
+					if err != nil {
+						log.Println("Error starting middleware app:", err)
+					}
+				}
 			}
 		}
-
 	}()
 
 	return nil
@@ -88,8 +86,6 @@ func (w *Watchdog) checkStatus() lpfr.LPFRStatus {
 		if err != nil {
 			log.Fatal(err)
 		}
-		//log.Println("LPFR has been started, wait for 10 seconds than check status again")
-		//<-time.After(time.Second * 10)
 		count := 5
 		lpfrStatus, err = w.client.EnvironmentStatus()
 		if err != nil {
