@@ -1,44 +1,22 @@
+/*
+Copyright © 2022 kockicica@gmail.com
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package main
 
-import (
-	"flag"
-	"fmt"
-	"log"
-	"os"
-	"os/signal"
-
-	"lpfr-o-matic/pkg/sys"
-	"lpfr-o-matic/pkg/watchdog"
-)
-
-var (
-	exePath       = flag.String("exepath", "Infod_LPFR.exe", "LPFR executable name")
-	checkUrl      = flag.String("checkurl", "http://localhost:7555", "url of the LPFR to check")
-	interval      = flag.Int("interval", 10, "interval (in seconds) to perform checks")
-	pin           = flag.String("pin", "", "pin code to authorize")
-	noAutoPin     = flag.Bool("nopin", false, "skip automatic pin setup")
-	middlewareApp = flag.String("middleware", "", "middleware application to start on successful status")
-)
+import "lpfr-o-matic/cmd"
 
 func main() {
-
-	flag.Parse()
-
-	_, err := sys.CreateMutex("lpfr-o-matic")
-	if err != nil {
-		log.Println("It looks like another instance of lpfr-o-matic is running")
-		return
-	}
-
-	wd := watchdog.NewWatchdog(*exePath, *checkUrl, *interval, *pin, *noAutoPin, *middlewareApp)
-	err = wd.Start()
-	if err != nil {
-		log.Fatalln(err)
-	}
-	wait := make(chan os.Signal)
-	fmt.Println("Started")
-	signal.Notify(wait, os.Kill, os.Interrupt)
-	<-wait
-	fmt.Println("Stopped")
-
+	cmd.Execute()
 }
