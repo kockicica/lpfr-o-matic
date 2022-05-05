@@ -41,7 +41,7 @@ var (
 var rootCmd = &cobra.Command{
 	Use:     "lpfr-o-matic",
 	Short:   "LPFR runner & monitor",
-	Version: "0.1.10",
+	Version: "0.1.11",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		_, err := sys.CreateMutex("lpfr-o-matic")
 		if err != nil {
