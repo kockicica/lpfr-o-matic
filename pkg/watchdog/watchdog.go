@@ -7,7 +7,21 @@ import (
 	"time"
 
 	"lpfr-o-matic/pkg/lpfr"
+	"lpfr-o-matic/pkg/telegram"
 )
+
+type WatchdogConfig struct {
+	ExePath              string
+	CheckUrl             string
+	CheckInterval        int
+	Pin                  string
+	NoPin                bool
+	MiddlewareApp        string
+	SendTelegramMessages bool
+	TelegramChannelId    string
+	TelegramApiKey       string
+	TelegramSender       string
+}
 
 type Watchdog struct {
 	exePath              string
@@ -21,6 +35,8 @@ type Watchdog struct {
 	noPin                bool
 	middlewareApp        string
 	hasMiddlewareStarted bool
+	sendTelegramMessages bool
+	telegramClient       *telegram.Client
 }
 
 func (w *Watchdog) Start() error {
@@ -31,6 +47,7 @@ func (w *Watchdog) Start() error {
 		lpfrStatus := w.checkStatus()
 		log.Printf("Initial LPFR status: %s", lpfrStatus)
 		if err := w.sendPin(lpfrStatus); err != nil {
+			_ = w.sendTelegramMessage(telegram.Message{Title: "Fatal", Message: "Unable to set PIN after one attempt"})
 			log.Fatalln("Error sending pin:", err)
 		}
 
@@ -51,6 +68,7 @@ func (w *Watchdog) Start() error {
 				lpfrStatus = w.checkStatus()
 				log.Printf("LPFR status: %s", lpfrStatus)
 				if err := w.sendPin(lpfrStatus); err != nil {
+					_ = w.sendTelegramMessage(telegram.Message{Title: "Fatal", Message: "Unable to set PIN after one attempt"})
 					log.Fatalln("Error sending pin:", err)
 				}
 				if lpfrStatus == lpfr.Ready && !w.hasMiddlewareStarted && w.middlewareApp != "" {
@@ -84,6 +102,7 @@ func (w *Watchdog) checkStatus() lpfr.LPFRStatus {
 		log.Println("LPFR seems not to be running, trying to start it")
 		err := w.runExe()
 		if err != nil {
+			_ = w.sendTelegramMessage(telegram.Message{Title: "Fatal", Message: "Unable to start lpfr process"})
 			log.Fatal(err)
 		}
 		count := 5
@@ -94,11 +113,14 @@ func (w *Watchdog) checkStatus() lpfr.LPFRStatus {
 				<-time.After(time.Second * 5)
 				lpfrStatus, err = w.client.EnvironmentStatus()
 				if err == nil {
+					_ = w.sendTelegramMessage(telegram.Message{Title: "Info", Message: "LPFR process started"})
 					return lpfrStatus
 				}
 			}
+			_ = w.sendTelegramMessage(telegram.Message{Title: "Fatal", Message: "Unable to get lpfr environment status"})
 			log.Fatal(err)
 		}
+		_ = w.sendTelegramMessage(telegram.Message{Title: "Info", Message: "LPFR process started"})
 		return lpfrStatus
 	}
 	return lpfrStatus
@@ -140,21 +162,34 @@ func (w *Watchdog) sendPin(status lpfr.LPFRStatus) error {
 	if err != nil {
 		log.Println(err)
 	} else {
+		_ = w.sendTelegramMessage(telegram.Message{Title: "Info", Message: "PIN successfully set"})
 		log.Println("PIN set successfully")
 	}
 	return err
 }
-func NewWatchdog(exePath string, checkUrl string, interval int, pin string, noPin bool, middlewareApp string) *Watchdog {
+
+func (w *Watchdog) sendTelegramMessage(message telegram.Message) error {
+	if w.sendTelegramMessages {
+		return w.telegramClient.SendMessage(message)
+	}
+	return nil
+}
+
+func NewWatchdog(config WatchdogConfig) *Watchdog {
 	dg := new(Watchdog)
-	dg.exePath = exePath
-	dg.checkUrl = checkUrl
-	dg.checkInterval = time.Duration(interval)
+	dg.exePath = config.ExePath
+	dg.checkUrl = config.CheckUrl
+	dg.checkInterval = time.Duration(config.CheckInterval)
 	dg.stop = make(chan os.Signal)
 	dg.stopped = make(chan interface{})
-	dg.client = lpfr.NewLPFRClient(checkUrl)
-	dg.pin = pin
-	dg.noPin = noPin
-	dg.middlewareApp = middlewareApp
+	dg.client = lpfr.NewLPFRClient(config.CheckUrl)
+	dg.pin = config.Pin
+	dg.noPin = config.NoPin
+	dg.middlewareApp = config.MiddlewareApp
 	dg.hasMiddlewareStarted = false
+	dg.sendTelegramMessages = config.SendTelegramMessages
+	if dg.sendTelegramMessages {
+		dg.telegramClient = telegram.NewClient(config.TelegramApiKey, config.TelegramChannelId, config.TelegramSender)
+	}
 	return dg
 }

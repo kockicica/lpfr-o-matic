@@ -45,27 +45,32 @@ var rootCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		_, err := sys.CreateMutex("lpfr-o-matic")
 		if err != nil {
-			log.Println("It looks like another instance of lpfr-o-matic is running")
+			fmt.Println("It looks like another instance of lpfr-o-matic is running")
 			return err
 		}
 
-		wd := watchdog.NewWatchdog(viper.GetString("exepath"),
-			viper.GetString("checkurl"),
-			viper.GetInt("interval"),
-			viper.GetString("pin"),
-			viper.GetBool("nopin"),
-			viper.GetString("middleware"),
-		)
+		wdConfig := watchdog.WatchdogConfig{
+			ExePath:              viper.GetString("exepath"),
+			CheckUrl:             viper.GetString("checkurl"),
+			CheckInterval:        viper.GetInt("interval"),
+			Pin:                  viper.GetString("pin"),
+			NoPin:                viper.GetBool("nopin"),
+			MiddlewareApp:        viper.GetString("middleware"),
+			SendTelegramMessages: viper.GetBool("telegram"),
+			TelegramChannelId:    "-1001649690196",
+			TelegramApiKey:       "5365246262:AAEGhUSciSyDOsy_ZDjO6Mf2pTM6TlLm19U",
+		}
+		wd := watchdog.NewWatchdog(wdConfig)
 		err = wd.Start()
 		if err != nil {
 			log.Fatalln(err)
 			return err
 		}
 		wait := make(chan os.Signal)
-		fmt.Println("Started")
+		log.Println("Started")
 		signal.Notify(wait, os.Kill, os.Interrupt)
 		<-wait
-		fmt.Println("Stopped")
+		log.Println("Stopped")
 		return nil
 	},
 }
@@ -89,6 +94,10 @@ func init() {
 	rootCmd.Flags().StringVar(&pin, "pin", "", "smart card pin code")
 	rootCmd.Flags().BoolVar(&noAutoPin, "nopin", false, "skip automatic pin setup")
 	rootCmd.Flags().StringVar(&middlewareApp, "middleware", "", "middleware application to start on successful status")
+	rootCmd.Flags().Bool("telegram", false, "send telegram status messages")
+	rootCmd.Flags().String("telegram-api-key", "", "telegram bot api key")
+	rootCmd.Flags().String("telegram-chat-id", "", "telegram chat id")
+	rootCmd.Flags().String("telegram-sender", "", "sender identification")
 
 	if err := viper.BindPFlags(rootCmd.Flags()); err != nil {
 		log.Fatalln(err)
