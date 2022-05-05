@@ -30,7 +30,9 @@ func (w *Watchdog) Start() error {
 		// initial check if running
 		lpfrStatus := w.checkStatus()
 		log.Printf("Initial LPFR status: %s", lpfrStatus)
-		w.sendPin(lpfrStatus)
+		if err := w.sendPin(lpfrStatus); err != nil {
+			log.Fatalln("Error sending pin:", err)
+		}
 		if !w.hasMiddlewareStarted && w.middlewareApp != "" {
 			log.Println("Trying to start middleware app:", w.middlewareApp)
 			// start middleware app
@@ -42,15 +44,6 @@ func (w *Watchdog) Start() error {
 			}
 
 		}
-
-		//if lpfrStatus == lpfr.NeedsPIN {
-		//	err := w.client.SendPIN(w.pin)
-		//	if err != nil {
-		//		log.Println(err)
-		//	} else {
-		//		log.Println("PIN set successfully")
-		//	}
-		//}
 
 		for true {
 			select {
@@ -64,20 +57,13 @@ func (w *Watchdog) Start() error {
 				w.stopped <- true
 				break
 			case <-time.After(time.Second * w.checkInterval):
-				// every ten seconds
+				// every ten seconds or so
 				log.Println("check interval exceeded, do check")
 				lpfrStatus = w.checkStatus()
 				log.Printf("LPFR status: %s", lpfrStatus)
-				w.sendPin(lpfrStatus)
-				//if lpfrStatus == lpfr.NeedsPIN {
-				//	// send pin
-				//	err := w.client.SendPIN(w.pin)
-				//	if err != nil {
-				//		log.Println(err)
-				//	} else {
-				//		log.Println("PIN set successfully")
-				//	}
-				//}
+				if err := w.sendPin(lpfrStatus); err != nil {
+					log.Fatalln("Error sending pin:", err)
+				}
 			}
 		}
 
@@ -151,8 +137,8 @@ func (w *Watchdog) sendPin(status lpfr.LPFRStatus) error {
 		log.Println("Skip automatic pin setting")
 		return nil
 	}
-	log.Printf("Wait for 5 seconds before pin attempt")
-	<-time.After(5 * time.Second)
+	log.Printf("Wait for 2 seconds before pin attempt")
+	<-time.After(2 * time.Second)
 
 	err = w.client.SendPIN(w.pin)
 	if err != nil {

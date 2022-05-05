@@ -30,7 +30,6 @@ func main() {
 		return
 	}
 
-	//wd := watchdog.NewWatchdog("D:\\project\\source\\repositories\\fake-lpfr\\fake-lpfr.exe", "http://localhost:29000", 10, "1234")
 	wd := watchdog.NewWatchdog(*exePath, *checkUrl, *interval, *pin, *noAutoPin, *middlewareApp)
 	err = wd.Start()
 	if err != nil {

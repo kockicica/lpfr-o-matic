@@ -43,32 +43,6 @@ type LPFRClient struct {
 	checkUrl string
 }
 
-//func (c *LPFRClient) GetStatus() (LPFRStatus, error) {
-//	fullUrl := fmt.Sprintf("%s/api/v3/status", c.checkUrl)
-//	log.Println("Get status, url: ", fullUrl)
-//	rsp, err := http.Get(fullUrl)
-//	if err != nil {
-//		return Stopped, err
-//	}
-//	data, err := io.ReadAll(rsp.Body)
-//	if err != nil {
-//		return Stopped, err
-//	}
-//	status := StatusResponse{}
-//	err = json.Unmarshal(data, &status)
-//	if err != nil {
-//		return Stopped, err
-//	}
-//	switch status.IsPinRequired {
-//	case true:
-//		return NeedsPIN, nil
-//	case false:
-//		return Ready, nil
-//	default:
-//		return Unknown, nil
-//	}
-//}
-
 func (c *LPFRClient) EnvironmentStatus() (LPFRStatus, error) {
 	fullUrl := fmt.Sprintf("%s/api/v3/environment-parameters", c.checkUrl)
 	log.Println("Get environment, url: ", fullUrl)
@@ -95,16 +69,6 @@ func (c *LPFRClient) EnvironmentStatus() (LPFRStatus, error) {
 
 	return Ready, nil
 }
-
-//func (c *LPFRClient) IsAlive() bool {
-//	fullUrl := fmt.Sprintf("%s/api/v3/attention", c.checkUrl)
-//	log.Println("Check if lpfr is alive, url: ", fullUrl)
-//	_, err := http.Get(fullUrl)
-//	if err != nil {
-//		return false
-//	}
-//	return true
-//}
 
 func (l *LPFRClient) SendPIN(pin string) error {
 	fullUrl := fmt.Sprintf("%s/api/v3/pin", l.checkUrl)
