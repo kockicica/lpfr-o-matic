@@ -130,9 +130,6 @@ func (w *Watchdog) checkStatus() lpfr.LPFRStatus {
 func (w *Watchdog) runExe() error {
 	log.Println("Trying to start external process: ", w.exePath)
 	w.exeCmd = exec.Command("cmd.exe", "/C", "start", w.exePath, "/min")
-	//w.exeCmd = exec.Command("cmd.exe", "/C", "start", w.exePath, "/min")
-	//w.exeCmd = exec.Command("cmd.exe", "/K", w.exePath)
-	//w.exeCmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	err := w.exeCmd.Start()
 	return err
 }
