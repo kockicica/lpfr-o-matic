@@ -11,16 +11,16 @@ import (
 )
 
 type WatchdogConfig struct {
-	ExePath              string
-	CheckUrl             string
-	CheckInterval        int
-	Pin                  string
-	NoPin                bool
-	MiddlewareApp        string
-	SendTelegramMessages bool
-	TelegramChannelId    string
-	TelegramApiKey       string
-	TelegramSender       string
+	ExePath           string
+	CheckUrl          string
+	CheckInterval     int `mapstructure:"interval"`
+	Pin               string
+	NoPin             bool
+	MiddlewareApp     string `mapstructure:"middleware"`
+	Telegram          bool
+	TelegramChannelId string `mapstructure:"telegram-channel-id"`
+	TelegramApiKey    string `mapstructure:"telegram-api-key"`
+	TelegramSender    string `mapstructure:"telegram-sender"`
 }
 
 type Watchdog struct {
@@ -187,7 +187,7 @@ func NewWatchdog(config WatchdogConfig) *Watchdog {
 	dg.noPin = config.NoPin
 	dg.middlewareApp = config.MiddlewareApp
 	dg.hasMiddlewareStarted = false
-	dg.sendTelegramMessages = config.SendTelegramMessages
+	dg.sendTelegramMessages = config.Telegram
 	if dg.sendTelegramMessages {
 		dg.telegramClient = telegram.NewClient(config.TelegramApiKey, config.TelegramChannelId, config.TelegramSender)
 	}

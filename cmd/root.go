@@ -41,7 +41,7 @@ var (
 var rootCmd = &cobra.Command{
 	Use:     "lpfr-o-matic",
 	Short:   "LPFR runner & monitor",
-	Version: "0.1.11",
+	Version: "0.1.12",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		_, err := sys.CreateMutex("lpfr-o-matic")
 		if err != nil {
@@ -49,16 +49,9 @@ var rootCmd = &cobra.Command{
 			return err
 		}
 
-		wdConfig := watchdog.WatchdogConfig{
-			ExePath:              viper.GetString("exepath"),
-			CheckUrl:             viper.GetString("checkurl"),
-			CheckInterval:        viper.GetInt("interval"),
-			Pin:                  viper.GetString("pin"),
-			NoPin:                viper.GetBool("nopin"),
-			MiddlewareApp:        viper.GetString("middleware"),
-			SendTelegramMessages: viper.GetBool("telegram"),
-			TelegramChannelId:    "-1001649690196",
-			TelegramApiKey:       "5365246262:AAEGhUSciSyDOsy_ZDjO6Mf2pTM6TlLm19U",
+		wdConfig := watchdog.WatchdogConfig{}
+		if err := viper.Unmarshal(&wdConfig); err != nil {
+			return err
 		}
 		wd := watchdog.NewWatchdog(wdConfig)
 		err = wd.Start()
