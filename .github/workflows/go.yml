@@ -44,7 +44,7 @@ jobs:
           commit-ish: 'HEAD'
 
       - name: Build
-        run: ./build.sh gospl
+        run: ./build.sh lpfr-o-matic
         env:
           CI_COMMIT_TAG: ${{steps.tagger.outputs.tag}}
 
