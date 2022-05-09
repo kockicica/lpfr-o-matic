@@ -55,7 +55,7 @@ jobs:
 #          files: ./artifacts/**
 #          automatic_release_tag: "latest"
       - name: Release
-        uses: Hs1r1us/Release-AIO@latest
+        uses: Hs1r1us/Release-AIO
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
