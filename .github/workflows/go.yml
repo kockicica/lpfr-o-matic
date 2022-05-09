@@ -48,17 +48,9 @@ jobs:
         env:
           CI_COMMIT_TAG: ${{steps.tagger.outputs.tag}}
 
-#      - name: Release
-#        uses: marvinpinto/action-automatic-releases@latest
-#        with:
-#          repo_token: ${{ secrets.GITHUB_TOKEN }}
-#          files: ./artifacts/**
-#          automatic_release_tag: "latest"
       - name: Release
-        uses: Hs1r1us/Release-AIO@v1.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: marvinpinto/action-automatic-releases@latest
         with:
-          tag_name: ${{ github.ref }}
-          asset_files: './artifacts/'
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          files: ./artifacts/**
 
