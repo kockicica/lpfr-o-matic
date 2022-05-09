@@ -53,3 +53,5 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           files: ./artifacts/**
+          automatic_release_tag: "latest"
+
