@@ -22,9 +22,13 @@ type Client struct {
 func (c *Client) SendMessage(message Message) error {
 
 	if message.Sender == "" {
-		hostname, err := os.Hostname()
-		if err == nil {
-			message.Sender = hostname
+		if c.sender != "" {
+			message.Sender = c.sender
+		} else {
+			hostname, err := os.Hostname()
+			if err == nil {
+				message.Sender = hostname
+			}
 		}
 	}
 	text := fmt.Sprintf("*From:%s*\n\n*%s*\n%s", message.Sender, message.Title, message.Message)
