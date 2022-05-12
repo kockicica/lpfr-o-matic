@@ -38,10 +38,10 @@ for platform in "${platforms[@]}"; do
   # env GOOS=$GOOS GOARCH=$GOARCH go build -o $output_name $package
   env GOOS=$GOOS GOARCH=$GOARCH go build \
   -ldflags "-extldflags '-static' \
-  -X gospl/cmd.VERSION=$VERSION \
-  -X gospl/cmd.BUILT=$BUILDTIME \
-  -X gospl/cmd.REVISION=$REVISION \
-  -X gospl/cmd.BRANCH=$BRANCH \
+  -X lpfr-o-matic/cmd.VERSION=$VERSION \
+  -X lpfr-o-matic/cmd.BUILT=$BUILDTIME \
+  -X lpfr-o-matic/cmd.REVISION=$REVISION \
+  -X lpfr-o-matic/cmd.BRANCH=$BRANCH \
   " \
   -o ./$ARTIFACTS_DIR/$output_name $package_name
   if [ $? -ne 0 ]; then
